@@ -29,7 +29,7 @@ export default class MatCapsModel {
 
         if (!material) {
           material = {};
-          material.orignal = _child.material;
+          material.original = _child.material;
           material.meshes = [];
 
           this.model.materials[_child.material.name] = material;
@@ -39,11 +39,15 @@ export default class MatCapsModel {
     });
 
     // Create New Materials
-    for (const _materialsKey in this.model.materials) {
-      const material = this.model.materials[_materialsKey];
+    for (const _materialKey in this.model.materials) {
+      const material = this.model.materials[_materialKey];
+
+      const matcapTexture =
+        this.resources.items[`${material.original.name}MatcapTexture`];
+      matcapTexture.encoding = THREE.sRGBEncoding;
 
       material.new = new THREE.MeshMatcapMaterial({
-        matcap: this.resources.items[`${material.orignal.name}MatcapTexture`]
+        matcap: matcapTexture
       });
 
       for (const _mesh of material.meshes) {
