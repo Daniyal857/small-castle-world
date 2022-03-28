@@ -1,8 +1,8 @@
-# My Room in 3D
+# Small Castle World
 
 ## Links
 
-- [Live](https://room-in-3d.vercel.app/)
+- [Live](#)
 
 ## Setup
 
@@ -18,4 +18,3 @@ npm run dev
 # Build for production in the dist/ directory
 npm run build
 ```
-# small-castle-world
