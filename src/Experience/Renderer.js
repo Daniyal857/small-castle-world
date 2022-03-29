@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Experience from './Experience.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 
 export default class Renderer {
   constructor(_options = {}) {
@@ -15,6 +16,14 @@ export default class Renderer {
     this.camera = this.experience.camera;
 
     this.usePostprocess = true;
+
+    // Debug
+    if (this.debug) {
+      this.debugFolder = this.debug.addFolder({
+        title: 'renderer'
+        // expanded: false
+      });
+    }
 
     this.setInstance();
     this.setPostProcess();
@@ -67,6 +76,33 @@ export default class Renderer {
     );
 
     /**
+     * Bokeh pass
+     */
+    this.postProcess.bokehPass = new BokehPass(
+      this.scene,
+      this.camera.instance,
+      { focus: 28.0, aperture: 0.0025, maxblur: 0.012 }
+    );
+
+    if (this.debug) {
+      this.debugFolder.addInput(
+        this.postProcess.bokehPass.materialBokeh.uniforms.focus,
+        'value',
+        { label: 'focus', in: 0, max: 50 }
+      );
+      this.debugFolder.addInput(
+        this.postProcess.bokehPass.materialBokeh.uniforms.aperture,
+        'value',
+        { label: 'aperture', in: 0, max: 0.01 }
+      );
+      this.debugFolder.addInput(
+        this.postProcess.bokehPass.materialBokeh.uniforms.maxblur,
+        'value',
+        { label: 'maxblur', in: 0, max: 0.1 }
+      );
+    }
+
+    /**
      * Effect composer
      */
     const RenderTargetClass =
@@ -93,6 +129,7 @@ export default class Renderer {
     this.postProcess.composer.setPixelRatio(this.config.pixelRatio);
 
     this.postProcess.composer.addPass(this.postProcess.renderPass);
+    this.postProcess.composer.addPass(this.postProcess.bokehPass);
   }
 
   resize() {
