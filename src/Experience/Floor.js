@@ -1,12 +1,17 @@
 import * as THREE from 'three';
 import Experience from './Experience.js';
+
 import floorBackgroundVertex from './shaders/floorBackground/vertex.glsl';
 import floorBackgroundFragment from './shaders/floorBackground/fragment.glsl';
+
+import floorBakedVertex from './shaders/floorBaked/vertex.glsl';
+import floorBakedFragment from './shaders/floorBaked/fragment.glsl';
 
 export default class Floor {
   constructor(_options) {
     // Options
     this.experience = new Experience();
+    this.resources = this.experience.resources;
     this.debug = this.experience.debug;
     this.scene = this.experience.scene;
 
@@ -18,6 +23,7 @@ export default class Floor {
       });
     }
 
+    this.setBakedFloor();
     this.setBackground();
   }
 
@@ -121,6 +127,42 @@ export default class Floor {
           })
           .on('change', this.background.updateColors);
       }
+    }
+  }
+
+  setBakedFloor() {
+    this.baked = {};
+
+    this.baked.color = '#4c5219';
+
+    this.baked.texture = this.resources.items.bakedFloorTexture;
+    this.baked.texture.flipY = false;
+
+    this.baked.material = new THREE.ShaderMaterial({
+      transparent: true,
+      uniforms: {
+        uAlphaMask: { value: this.baked.texture },
+        uColor: { value: new THREE.Color(this.baked.color) }
+      },
+      vertexShader: floorBakedVertex,
+      fragmentShader: floorBakedFragment
+    });
+
+    this.baked.model = this.resources.items.bakedFloorModel.scene.children[0];
+    this.baked.model.material = this.baked.material;
+
+    this.scene.add(this.baked.model);
+
+    // Debug
+    if (this.debug) {
+      this.debugFolder
+        .addInput(this.baked, 'color', {
+          label: 'shadowColor',
+          view: 'color'
+        })
+        .on('change', () => {
+          this.baked.material.uniforms.uColor.value.set(this.baked.color);
+        });
     }
   }
 }

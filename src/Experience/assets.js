@@ -8,6 +8,15 @@ export default [
         source: '/assets/smallWorld.glb'
       },
       {
+        name: 'bakedFloorModel',
+        source: '/assets/bakedFloorModel.glb'
+      },
+      {
+        name: 'bakedFloorTexture',
+        source: '/assets/bakedFloorTexture.png',
+        type: 'texture'
+      },
+      {
         name: 'windStroke1eModel',
         source: '/assets/windStroke1.glb',
         type: 'model'
