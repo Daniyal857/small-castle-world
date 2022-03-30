@@ -52,7 +52,7 @@ export default class Renderer {
     // this.instance.gammaOutPut = true
     this.instance.outputEncoding = THREE.sRGBEncoding;
     // this.instance.shadowMap.type = THREE.PCFSoftShadowMap
-    // this.instance.shadowMap.enabled = false
+    // this.instance.shadowMap.enabled = true;
     // this.instance.toneMapping = THREE.ReinhardToneMapping
     // this.instance.toneMappingExposure = 1.3
 
@@ -81,7 +81,8 @@ export default class Renderer {
     this.postProcess.bokehPass = new BokehPass(
       this.scene,
       this.camera.instance,
-      { focus: 28.0, aperture: 0.0025, maxblur: 0.012 }
+      // { focus: 28.0, aperture: 0.0025, maxblur: 0.012 }
+      { focus: 0.0, aperture: 0.0, maxblur: 0.0 }
     );
 
     if (this.debug) {

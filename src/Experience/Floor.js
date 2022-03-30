@@ -28,25 +28,25 @@ export default class Floor {
     this.background.colors = {};
 
     this.background.colors.topLeft = {};
-    this.background.colors.topLeft.value = '#647C18';
+    this.background.colors.topLeft.value = '#5B8629';
     this.background.colors.topLeft.instance = new THREE.Color(
       this.background.colors.topLeft.value
     );
 
     this.background.colors.topRight = {};
-    this.background.colors.topRight.value = '#546A15';
+    this.background.colors.topRight.value = '#4F7723';
     this.background.colors.topRight.instance = new THREE.Color(
       this.background.colors.topRight.value
     );
 
     this.background.colors.bottomLeft = {};
-    this.background.colors.bottomLeft.value = '#E0E56B';
+    this.background.colors.bottomLeft.value = '#E3F2B0';
     this.background.colors.bottomLeft.instance = new THREE.Color(
       this.background.colors.bottomLeft.value
     );
 
     this.background.colors.bottomRight = {};
-    this.background.colors.bottomRight.value = '#8FA825';
+    this.background.colors.bottomRight.value = '#8AB343';
     this.background.colors.bottomRight.instance = new THREE.Color(
       this.background.colors.bottomRight.value
     );
