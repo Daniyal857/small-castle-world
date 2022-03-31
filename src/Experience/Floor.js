@@ -74,6 +74,7 @@ export default class Floor {
       this.background.geometry,
       this.background.material
     );
+    this.background.mesh.frustumCulled = false;
     this.scene.add(this.background.mesh);
 
     // Update Colors

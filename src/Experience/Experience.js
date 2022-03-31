@@ -11,6 +11,7 @@ import World from './World.js';
 import Navigation from './Navigation.js';
 
 import assets from './assets.js';
+import DepthOfField from './DepthOfField.js';
 
 export default class Experience {
   static instance;
@@ -37,6 +38,7 @@ export default class Experience {
     this.setScene();
     this.setCamera();
     this.setRenderer();
+    this.setDepthOfField();
     this.setResources();
     this.setWorld();
     this.setNavigation();
@@ -86,6 +88,10 @@ export default class Experience {
     this.camera = new Camera();
   }
 
+  setDepthOfField() {
+    this.depthOfField = new DepthOfField();
+  }
+
   setRenderer() {
     this.renderer = new Renderer({ rendererInstance: this.rendererInstance });
 
@@ -108,6 +114,8 @@ export default class Experience {
     if (this.stats) this.stats.update();
 
     this.camera.update();
+
+    if (this.depthOfField) this.depthOfField.update();
 
     if (this.renderer) this.renderer.update();
 
