@@ -29,12 +29,16 @@ export default class World {
   }
 
   setModel() {
-    this.model = new MatCapsModel();
+    this.matcapModal = new MatCapsModel();
   }
 
   resize() {}
 
-  update() {}
+  update() {
+    if (this.matcapModal) {
+      this.matcapModal.update();
+    }
+  }
 
   destroy() {}
 }

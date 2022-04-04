@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import gsap from 'gsap';
 import { mergeUniforms } from 'three/src/renderers/shaders/UniformsUtils.js';
 import Experience from './Experience.js';
 import matcapVertex from './shaders/matcap/vertex.glsl';
@@ -13,6 +14,7 @@ export default class MatCapsModel {
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
     this.bounceColor = '#4f7723';
+    this.objects = {};
 
     // Debug
     if (this.debug) {
@@ -30,6 +32,7 @@ export default class MatCapsModel {
 
     this.setUniforms();
     this.setModel();
+    this.setTelescope();
   }
 
   setUniforms() {
@@ -90,6 +93,20 @@ export default class MatCapsModel {
         }
         material.meshes.push(_child);
       }
+
+      // Save Object
+      if (_child.name.match(/^telescopeY/)) {
+        this.objects.telescopeY = _child;
+      }
+      if (_child.name.match(/^telescopeX/)) {
+        this.objects.telescopeX = _child;
+      }
+      if (_child.name.match(/^gear0/)) {
+        this.objects.gear0 = _child;
+      }
+      if (_child.name.match(/^gear1/)) {
+        this.objects.gear1 = _child;
+      }
     });
 
     // Create New Materials
@@ -140,5 +157,39 @@ export default class MatCapsModel {
     }
 
     this.scene.add(this.model.resource.scene);
+  }
+
+  setTelescope() {
+    this.telescope = {};
+
+    this.telescope.rotateY = () => {
+      gsap.to(this.objects.telescopeY.rotation, {
+        duration: 0.5 + Math.random() * 2,
+        delay: Math.random() * 2.0,
+        ease: 'power2.inOut',
+        y: (Math.random() - 0.5) * 1.5,
+        onComplete: this.telescope.rotateY
+      });
+    };
+
+    this.telescope.rotateX = () => {
+      gsap.to(this.objects.telescopeX.rotation, {
+        duration: 0.5 + Math.random() * 2,
+        delay: Math.random() * 2.0,
+        ease: 'power2.inOut',
+        x: -Math.random(),
+        onComplete: this.telescope.rotateX
+      });
+    };
+
+    this.telescope.rotateY();
+    this.telescope.rotateX();
+  }
+
+  update() {
+    this.objects.gear0.rotation.y =
+      -this.objects.telescopeY.rotation.y * (11 / 6);
+    this.objects.gear1.rotation.y =
+      -0.5 - this.objects.telescopeY.rotation.y * (11 / 6);
   }
 }

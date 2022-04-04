@@ -59,7 +59,6 @@ export default class Floor {
 
     // Geometry
     this.background.geometry = new THREE.PlaneGeometry(2, 2, 1, 1);
-    // console.log('this.background.geometry', this.background.geometry);
 
     // Material
     this.background.material = new THREE.ShaderMaterial({
