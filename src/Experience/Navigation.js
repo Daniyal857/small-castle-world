@@ -26,7 +26,7 @@ export default class Navigation {
   setSpherical() {
     this.spherical = {};
 
-    const radius = Math.max(1, this.sizes.height / this.sizes.width) * 22;
+    const radius = Math.max(1, this.sizes.height / this.sizes.width) * 24;
     this.spherical.target = new THREE.Spherical(
       radius,
       Math.PI * 0.4,
@@ -42,7 +42,7 @@ export default class Navigation {
     this.spherical.speed.theta = -2;
 
     this.spherical.limits = {};
-    this.spherical.limits.radius = { min: 9, max: 30 };
+    this.spherical.limits.radius = { min: 9, max: 35 };
     this.spherical.limits.phi = { min: 0.8, max: 1.35 };
     this.spherical.limits.theta = { min: 0.35, max: 1.35 };
   }
