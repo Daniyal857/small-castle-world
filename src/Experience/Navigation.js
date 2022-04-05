@@ -1,282 +1,370 @@
 import * as THREE from 'three';
-import Experience from './Experience.js';
 import normalizeWheel from 'normalize-wheel';
+
+import Experience from './Experience.js';
 
 export default class Navigation {
   constructor() {
     this.experience = new Experience();
+    this.debug = this.experience.debug;
+    this.time = this.experience.time;
+    this.sizes = this.experience.sizes;
     this.targetElement = this.experience.targetElement;
     this.camera = this.experience.camera;
-    this.config = this.experience.config;
-    this.time = this.experience.time;
 
-    this.setView();
+    this.center = new THREE.Vector3(0, 2, 0);
+
+    this.setSpherical();
+    this.setBoomTruck();
+    this.setDrag();
+    this.setMouse();
+    this.setTouch();
+    this.setWheel();
+    this.setContextMenu();
   }
 
-  setView() {
-    this.view = {};
+  setSpherical() {
+    this.spherical = {};
 
-    this.view.spherical = {};
-    this.view.spherical.value = new THREE.Spherical(
-      30,
-      Math.PI * 0.35,
+    const radius = Math.max(1, this.sizes.height / this.sizes.width) * 22;
+    this.spherical.target = new THREE.Spherical(
+      radius,
+      Math.PI * 0.4,
       Math.PI * 0.25
     );
+    this.spherical.value = this.spherical.target.clone();
 
-    // for coffeeSmooke
-    // this.view.spherical.value.radius = 5;
+    this.spherical.easing = 0.01;
 
-    this.view.spherical.smoothed = this.view.spherical.value.clone();
-    this.view.spherical.smoothing = 0.005;
-    this.view.spherical.limits = {};
-    this.view.spherical.limits.radius = { min: 10, max: 50 };
-    this.view.spherical.limits.phi = { min: 0.01, max: Math.PI * 0.5 };
-    this.view.spherical.limits.theta = { min: -Math.PI * 0.05, max: 1.5 };
+    this.spherical.speed = {};
+    this.spherical.speed.radius = 0.01;
+    this.spherical.speed.phi = -2;
+    this.spherical.speed.theta = -2;
 
-    this.view.target = {};
-    this.view.target.value = new THREE.Vector3(0, 2, 0);
+    this.spherical.limits = {};
+    this.spherical.limits.radius = { min: 9, max: 30 };
+    this.spherical.limits.phi = { min: 0.8, max: 1.35 };
+    this.spherical.limits.theta = { min: 0.35, max: 1.35 };
+  }
 
-    // this.view.target.value.set(-7, 0, -3); //for testing , coffeeSmooke
+  setBoomTruck() {
+    this.boomTruck = {};
+    this.boomTruck.target = { x: 0, y: 0 };
+    this.boomTruck.value = { x: 0, y: 0 };
+    this.boomTruck.limits = { min: -0.2, max: 0.2 };
+    this.boomTruck.speed = 0.4;
+    this.boomTruck.easing = 0.01;
+  }
 
-    this.view.target.smoothed = this.view.target.value.clone();
-    this.view.target.smoothing = 0.005;
-    this.view.target.limits = {};
-    this.view.target.limits.x = { min: -4, max: 4 };
-    this.view.target.limits.y = { min: 1, max: 6 };
-    this.view.target.limits.z = { min: -4, max: 4 };
+  setDrag() {
+    this.drag = {};
 
-    this.view.drag = {};
-    this.view.drag.delta = {};
-    this.view.drag.delta.x = 0;
-    this.view.drag.delta.y = 0;
-    this.view.drag.previous = {};
-    this.view.drag.previous.x = 0;
-    this.view.drag.previous.y = 0;
-    this.view.drag.sensitivity = 1;
-    this.view.drag.alternative = false;
+    /**
+     * Setup
+     */
+    this.drag.value = { x: 0, y: 0 };
+    this.drag.previous = { x: 0, y: 0 };
+    this.drag.delta = { x: 0, y: 0 };
 
-    this.view.zoom = {};
-    this.view.zoom.sensitivity = 0.01;
-    this.view.zoom.delta = 0;
+    this.drag.secondary = false;
 
     /**
      * Methods
      */
-    this.view.down = (_x, _y) => {
-      this.view.drag.previous.x = _x;
-      this.view.drag.previous.y = _y;
+    this.drag.start = (_x, _y) => {
+      const normalizedX = _x / this.sizes.width;
+      const normalizedY = _y / this.sizes.height;
+
+      this.drag.value.x = normalizedX;
+      this.drag.value.y = normalizedY;
+
+      this.drag.previous.x = normalizedX;
+      this.drag.previous.y = normalizedY;
     };
 
-    this.view.move = (_x, _y) => {
-      this.view.drag.delta.x += _x - this.view.drag.previous.x;
-      this.view.drag.delta.y += _y - this.view.drag.previous.y;
+    this.drag.move = (_x, _y) => {
+      const normalizedX = _x / this.sizes.width;
+      const normalizedY = _y / this.sizes.height;
 
-      this.view.drag.previous.x = _x;
-      this.view.drag.previous.y = _y;
+      this.drag.value.x = normalizedX;
+      this.drag.value.y = normalizedY;
+
+      this.drag.delta.x += this.drag.value.x - this.drag.previous.x;
+      this.drag.delta.y += this.drag.value.y - this.drag.previous.y;
+
+      this.drag.previous.x = normalizedX;
+      this.drag.previous.y = normalizedY;
     };
 
-    this.view.up = () => {};
+    this.drag.end = () => {};
+  }
 
-    this.view.zoomIn = _delta => {
-      this.view.zoom.delta += _delta;
-    };
-
-    /**
-     * Mouse events
-     */
-    this.view.onMouseDown = _event => {
+  setMouse() {
+    this.mouse = {};
+    this.mouse.onMouseDown = _event => {
+      // Prevent
       _event.preventDefault();
 
-      this.view.drag.alternative =
-        _event.button === 2 ||
+      // Button
+      this.drag.secondary =
         _event.button === 1 ||
-        _event.ctrlKey ||
-        _event.shiftKey;
+        _event.button === 2 ||
+        _event.shiftKey ||
+        _event.ctrlKey;
 
-      this.view.down(_event.clientX, _event.clientY);
+      // Start
+      this.drag.start(_event.clientX, _event.clientY);
 
-      window.addEventListener('mouseup', this.view.onMouseUp);
-      window.addEventListener('mousemove', this.view.onMouseMove);
+      // Cursor
+      this.targetElement.style.cursor = 'grabbing';
+
+      // Events
+      this.targetElement.addEventListener('mousemove', this.mouse.onMouseMove);
+      window.addEventListener('mouseup', this.mouse.onMouseUp);
     };
 
-    this.view.onMouseMove = _event => {
-      _event.preventDefault();
-
-      this.view.move(_event.clientX, _event.clientY);
+    this.mouse.onMouseMove = _event => {
+      // Move
+      this.drag.move(_event.clientX, _event.clientY);
     };
 
-    this.view.onMouseUp = _event => {
-      _event.preventDefault();
+    this.mouse.onMouseUp = () => {
+      // End
+      this.drag.end();
 
-      this.view.up();
+      // Cursor
+      this.targetElement.style.cursor = 'grab';
 
-      window.removeEventListener('mouseup', this.view.onMouseUp);
-      window.removeEventListener('mousemove', this.view.onMouseMove);
+      // Events
+      this.targetElement.removeEventListener(
+        'mousemove',
+        this.mouse.onMouseMove
+      );
+      window.removeEventListener('mouseup', this.mouse.onMouseUp);
     };
 
-    this.targetElement.addEventListener('mousedown', this.view.onMouseDown);
+    this.targetElement.addEventListener('mousedown', this.mouse.onMouseDown);
+  }
 
-    /**
-     * Touch events
-     */
-    this.view.onTouchStart = _event => {
+  setTouch() {
+    this.touch = {};
+
+    this.touch.pinch = {};
+    this.touch.pinch.value = 0;
+    this.touch.pinch.previous = 0;
+    this.touch.pinch.delta = 0;
+    this.touch.pinch.multiplier = -0.2;
+
+    this.touch.onTouchStart = _event => {
+      // Prevent
       _event.preventDefault();
 
-      this.view.drag.alternative = _event.touches.length > 1;
+      // Button
+      this.drag.secondary = _event.touches.length > 1;
 
-      this.view.down(_event.touches[0].clientX, _event.touches[0].clientY);
+      // Start
+      let x = 0;
+      let y = 0;
 
-      window.addEventListener('touchend', this.view.onTouchEnd);
-      window.addEventListener('touchmove', this.view.onTouchMove);
+      for (const _touch of _event.touches) {
+        x += _touch.clientX;
+        y += _touch.clientY;
+      }
+
+      x /= _event.touches.length;
+      y /= _event.touches.length;
+
+      this.drag.start(x, y);
+
+      // Pinch
+      if (_event.touches.length > 1) {
+        const distance = Math.hypot(
+          _event.touches[0].clientX - _event.touches[1].clientX,
+          _event.touches[0].clientY - _event.touches[1].clientY
+        );
+
+        this.touch.pinch.value = distance;
+        this.touch.pinch.previous = this.touch.pinch.value;
+      }
+
+      // Events
+      this.targetElement.addEventListener('touchmove', this.touch.onTouchMove);
+      window.addEventListener('touchend', this.touch.onTouchEnd);
     };
 
-    this.view.onTouchMove = _event => {
-      _event.preventDefault();
+    this.touch.onTouchMove = _event => {
+      // Move
+      let x = 0;
+      let y = 0;
 
-      this.view.move(_event.touches[0].clientX, _event.touches[0].clientY);
+      for (const _touch of _event.touches) {
+        x += _touch.clientX;
+        y += _touch.clientY;
+      }
+
+      x /= _event.touches.length;
+      y /= _event.touches.length;
+
+      this.drag.move(x, y);
+
+      if (_event.touches.length > 1) {
+        this.touch.pinch.value = Math.hypot(
+          _event.touches[0].clientX - _event.touches[1].clientX,
+          _event.touches[0].clientY - _event.touches[1].clientY
+        );
+        this.touch.pinch.delta +=
+          this.touch.pinch.value - this.touch.pinch.previous;
+        this.touch.pinch.previous = this.touch.pinch.value;
+      }
     };
 
-    this.view.onTouchEnd = _event => {
-      _event.preventDefault();
+    this.touch.onTouchEnd = () => {
+      // End
+      this.drag.end();
 
-      this.view.up();
-
-      window.removeEventListener('touchend', this.view.onTouchEnd);
-      window.removeEventListener('touchmove', this.view.onTouchMove);
+      // Events
+      this.targetElement.removeEventListener(
+        'touchmove',
+        this.touch.onTouchMove
+      );
+      window.removeEventListener('touchend', this.touch.onTouchEnd);
     };
 
-    window.addEventListener('touchstart', this.view.onTouchStart);
+    this.targetElement.addEventListener('touchstart', this.touch.onTouchStart);
+  }
 
-    /**
-     * Context menu
-     */
-    this.view.onContextMenu = _event => {
-      _event.preventDefault();
-    };
+  setWheel() {
+    this.wheel = {};
 
-    window.addEventListener('contextmenu', this.view.onContextMenu);
+    this.wheel.delta = 0;
 
-    /**
-     * Wheel
-     */
-    this.view.onWheel = _event => {
-      _event.preventDefault();
-
+    this.wheel.onWheel = _event => {
       const normalized = normalizeWheel(_event);
-      this.view.zoomIn(normalized.pixelY);
+
+      this.wheel.delta += normalized.pixelY;
     };
 
-    window.addEventListener('mousewheel', this.view.onWheel, {
-      passive: false
-    });
-    window.addEventListener('wheel', this.view.onWheel, { passive: false });
+    document.addEventListener('mousewheel', this.wheel.onWheel);
+  }
+
+  setContextMenu() {
+    this.contextMenu = {};
+    this.contextMenu.onContextMenu = _event => {
+      _event.preventDefault();
+    };
+
+    window.addEventListener('contextmenu', this.contextMenu.onContextMenu);
   }
 
   update() {
     /**
-     * View
+     * Spherical
      */
-    // Zoom
-    this.view.spherical.value.radius +=
-      this.view.zoom.delta * this.view.zoom.sensitivity;
-
-    // Apply limits
-    this.view.spherical.value.radius = Math.min(
-      Math.max(
-        this.view.spherical.value.radius,
-        this.view.spherical.limits.radius.min
-      ),
-      this.view.spherical.limits.radius.max
+    // Radius
+    this.spherical.target.radius +=
+      this.wheel.delta * this.spherical.speed.radius;
+    this.spherical.target.radius +=
+      this.touch.pinch.delta *
+      this.spherical.value.radius *
+      this.touch.pinch.multiplier *
+      this.spherical.speed.radius;
+    this.spherical.target.radius = Math.max(
+      this.spherical.limits.radius.min,
+      Math.min(this.spherical.limits.radius.max, this.spherical.target.radius)
     );
 
-    // Drag
-    if (this.view.drag.alternative) {
-      const up = new THREE.Vector3(0, 1, 0);
-      const right = new THREE.Vector3(-1, 0, 0);
+    if (!this.drag.secondary) {
+      // Theta and phi
+      this.spherical.target.phi += this.drag.delta.y * this.spherical.speed.phi;
+      this.spherical.target.theta +=
+        this.drag.delta.x * this.spherical.speed.theta;
 
-      up.applyQuaternion(this.camera.modes.default.instance.quaternion);
-      right.applyQuaternion(this.camera.modes.default.instance.quaternion);
-
-      up.multiplyScalar(this.view.drag.delta.y * 0.01);
-      right.multiplyScalar(this.view.drag.delta.x * 0.01);
-
-      this.view.target.value.add(up);
-      this.view.target.value.add(right);
-
-      // Apply limits
-      this.view.target.value.x = Math.min(
-        Math.max(this.view.target.value.x, this.view.target.limits.x.min),
-        this.view.target.limits.x.max
+      this.spherical.target.phi = Math.max(
+        this.spherical.limits.phi.min,
+        Math.min(this.spherical.limits.phi.max, this.spherical.target.phi)
       );
-      this.view.target.value.y = Math.min(
-        Math.max(this.view.target.value.y, this.view.target.limits.y.min),
-        this.view.target.limits.y.max
-      );
-      this.view.target.value.z = Math.min(
-        Math.max(this.view.target.value.z, this.view.target.limits.z.min),
-        this.view.target.limits.z.max
-      );
-    } else {
-      this.view.spherical.value.theta -=
-        (this.view.drag.delta.x * this.view.drag.sensitivity) /
-        this.config.smallestSide;
-      this.view.spherical.value.phi -=
-        (this.view.drag.delta.y * this.view.drag.sensitivity) /
-        this.config.smallestSide;
-
-      // Apply limits
-      this.view.spherical.value.theta = Math.min(
-        Math.max(
-          this.view.spherical.value.theta,
-          this.view.spherical.limits.theta.min
-        ),
-        this.view.spherical.limits.theta.max
-      );
-      this.view.spherical.value.phi = Math.min(
-        Math.max(
-          this.view.spherical.value.phi,
-          this.view.spherical.limits.phi.min
-        ),
-        this.view.spherical.limits.phi.max
+      this.spherical.target.theta = Math.max(
+        this.spherical.limits.theta.min,
+        Math.min(this.spherical.limits.theta.max, this.spherical.target.theta)
       );
     }
 
-    this.view.drag.delta.x = 0;
-    this.view.drag.delta.y = 0;
-    this.view.zoom.delta = 0;
-
-    // Smoothing
-    this.view.spherical.smoothed.radius +=
-      (this.view.spherical.value.radius - this.view.spherical.smoothed.radius) *
-      this.view.spherical.smoothing *
+    // Easing
+    this.spherical.value.radius +=
+      (this.spherical.target.radius - this.spherical.value.radius) *
+      this.spherical.easing *
       this.time.delta;
-    this.view.spherical.smoothed.phi +=
-      (this.view.spherical.value.phi - this.view.spherical.smoothed.phi) *
-      this.view.spherical.smoothing *
+    this.spherical.value.phi +=
+      (this.spherical.target.phi - this.spherical.value.phi) *
+      this.spherical.easing *
       this.time.delta;
-    this.view.spherical.smoothed.theta +=
-      (this.view.spherical.value.theta - this.view.spherical.smoothed.theta) *
-      this.view.spherical.smoothing *
+    this.spherical.value.theta +=
+      (this.spherical.target.theta - this.spherical.value.theta) *
+      this.spherical.easing *
       this.time.delta;
 
-    this.view.target.smoothed.x +=
-      (this.view.target.value.x - this.view.target.smoothed.x) *
-      this.view.target.smoothing *
+    /**
+     * Boom truck
+     */
+    if (this.drag.secondary) {
+      this.boomTruck.target.x += this.drag.delta.x * this.boomTruck.speed;
+      this.boomTruck.target.y += this.drag.delta.y * this.boomTruck.speed;
+
+      this.boomTruck.target.x = Math.max(
+        this.boomTruck.limits.min,
+        Math.min(this.boomTruck.limits.max, this.boomTruck.target.x)
+      );
+      this.boomTruck.target.y = Math.max(
+        this.boomTruck.limits.min,
+        Math.min(this.boomTruck.limits.max, this.boomTruck.target.y)
+      );
+    }
+
+    this.boomTruck.value.x +=
+      (this.boomTruck.target.x - this.boomTruck.value.x) *
+      this.boomTruck.easing *
       this.time.delta;
-    this.view.target.smoothed.y +=
-      (this.view.target.value.y - this.view.target.smoothed.y) *
-      this.view.target.smoothing *
-      this.time.delta;
-    this.view.target.smoothed.z +=
-      (this.view.target.value.z - this.view.target.smoothed.z) *
-      this.view.target.smoothing *
+    this.boomTruck.value.y +=
+      (this.boomTruck.target.y - this.boomTruck.value.y) *
+      this.boomTruck.easing *
       this.time.delta;
 
-    const viewPosition = new THREE.Vector3();
-    viewPosition.setFromSpherical(this.view.spherical.smoothed);
-    viewPosition.add(this.view.target.smoothed);
+    /**
+     * Drag
+     */
+    this.drag.delta.x = 0;
+    this.drag.delta.y = 0;
 
-    this.camera.modes.default.instance.position.copy(viewPosition);
-    this.camera.modes.default.instance.lookAt(this.view.target.smoothed);
+    /**
+     * Touch
+     */
+    this.touch.pinch.delta = 0;
+
+    /**
+     * Wheel
+     */
+    this.wheel.delta = 0;
+
+    /**
+     * Camera
+     */
+    // Apply spherical
+    const cameraPosition = new THREE.Vector3();
+    cameraPosition.setFromSpherical(this.spherical.value);
+    this.camera.modes.default.instance.position.copy(cameraPosition);
+
+    // Apply center offset
+    this.camera.modes.default.instance.position.add(this.center);
+
+    // Look at center
+    this.camera.modes.default.instance.lookAt(this.center);
+
+    // Apply boom truck
+    this.camera.modes.default.instance.translateX(
+      -this.boomTruck.value.x * this.spherical.value.radius
+    );
+    this.camera.modes.default.instance.translateY(
+      this.boomTruck.value.y * this.spherical.value.radius
+    );
   }
 }
