@@ -81,7 +81,7 @@ export default class Renderer {
     this.postProcess.bokehPass = new BokehPass(
       this.scene,
       this.camera.instance,
-      { focus: 28.0, aperture: 0.0025, maxblur: 0.012 }
+      { focus: 21.6, aperture: 0.001, maxblur: 0.006 }
       // { focus: 0.0, aperture: 0.0, maxblur: 0.0 }
     );
 

@@ -13,7 +13,8 @@ export default class MatCapsModel {
     this.debug = this.experience.debug;
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
-    this.bounceColor = '#4f7723';
+    this.floorColor = '#4f7723';
+    this.pointColor = '#ff0000';
     this.objects = {};
 
     // Debug
@@ -22,11 +23,19 @@ export default class MatCapsModel {
         title: 'matcapModal'
       });
       this.debugFolder
-        .addInput(this, 'bounceColor', {
+        .addInput(this, 'floorColor', {
           view: 'color'
         })
         .on('change', () => {
-          this.uniforms.uBounceColor.value.set(this.bounceColor);
+          this.uniforms.uFloorColor.value.set(this.floorColor);
+        });
+
+      this.debugFolder
+        .addInput(this, 'pointColor', {
+          view: 'color'
+        })
+        .on('change', () => {
+          this.uniforms.uPointColor.value.set(this.pointColor);
         });
     }
 
@@ -37,15 +46,21 @@ export default class MatCapsModel {
 
   setUniforms() {
     this.uniforms = {};
-    this.uniforms.uBounceColor = { value: new THREE.Color(this.bounceColor) };
-    this.uniforms.uBounceOrientationOffset = { value: 1 };
-    this.uniforms.uBounceOrientationMultiplier = { value: 0.62 };
-    this.uniforms.uBounceDistanceLimit = { value: 3.8 };
+    this.uniforms.uFloorColor = { value: new THREE.Color(this.floorColor) };
+    this.uniforms.uFloorOrientationOffset = { value: 1 };
+    this.uniforms.uFloorOrientationMultiplier = { value: 0.62 };
+    this.uniforms.uFloorDistanceLimit = { value: 3.8 };
+
+    this.uniforms.uPointColor = { value: new THREE.Color(this.pointColor) };
+    this.uniforms.uPointOrientationOffset = { value: 1 };
+    this.uniforms.uPointOrientationMultiplier = { value: 0.62 };
+    this.uniforms.uPointDistanceLimit = { value: 3.8 };
+    this.uniforms.uPointPosition = { value: new THREE.Vector3(0, 0.5, 1.692) };
 
     // Debug
     if (this.debug) {
       this.debugFolder.addInput(
-        this.uniforms.uBounceOrientationOffset,
+        this.uniforms.uFloorOrientationOffset,
         'value',
         {
           label: 'uOrientationOffset',
@@ -53,16 +68,40 @@ export default class MatCapsModel {
           max: 1
         }
       );
-      this.debugFolder.addInput(this.uniforms.uBounceDistanceLimit, 'value', {
-        label: 'uBounceDistanceLimit',
+      this.debugFolder.addInput(this.uniforms.uFloorDistanceLimit, 'value', {
+        label: 'uFloorDistanceLimit',
         min: 0,
         max: 10
       });
       this.debugFolder.addInput(
-        this.uniforms.uBounceOrientationMultiplier,
+        this.uniforms.uFloorOrientationMultiplier,
         'value',
         {
           label: 'uOrientationMultiplier',
+          min: 0,
+          max: 3
+        }
+      );
+
+      this.debugFolder.addInput(
+        this.uniforms.uPointOrientationOffset,
+        'value',
+        {
+          label: 'uPointOrientationOffset',
+          min: -1,
+          max: 1
+        }
+      );
+      this.debugFolder.addInput(this.uniforms.uPointDistanceLimit, 'value', {
+        label: 'uPointDistanceLimit',
+        min: 0,
+        max: 10
+      });
+      this.debugFolder.addInput(
+        this.uniforms.uPointOrientationMultiplier,
+        'value',
+        {
+          label: 'uPointOrientationMultiplier',
           min: 0,
           max: 3
         }
@@ -143,13 +182,22 @@ export default class MatCapsModel {
       material.new.matcap = matcapTexture;
       material.new.uniforms.matcap.value = matcapTexture;
 
-      material.new.uniforms.uBounceColor = this.uniforms.uBounceColor;
-      material.new.uniforms.uBounceOrientationOffset =
-        this.uniforms.uBounceOrientationOffset;
-      material.new.uniforms.uBounceDistanceLimit =
-        this.uniforms.uBounceDistanceLimit;
-      material.new.uniforms.uBounceOrientationMultiplier =
-        this.uniforms.uBounceOrientationMultiplier;
+      material.new.uniforms.uFloorColor = this.uniforms.uFloorColor;
+      material.new.uniforms.uFloorOrientationOffset =
+        this.uniforms.uFloorOrientationOffset;
+      material.new.uniforms.uFloorDistanceLimit =
+        this.uniforms.uFloorDistanceLimit;
+      material.new.uniforms.uFloorOrientationMultiplier =
+        this.uniforms.uFloorOrientationMultiplier;
+
+      material.new.uniforms.uPointColor = this.uniforms.uPointColor;
+      material.new.uniforms.uPointOrientationOffset =
+        this.uniforms.uPointOrientationOffset;
+      material.new.uniforms.uPointDistanceLimit =
+        this.uniforms.uPointDistanceLimit;
+      material.new.uniforms.uPointOrientationMultiplier =
+        this.uniforms.uPointOrientationMultiplier;
+      material.new.uniforms.uPointPosition = this.uniforms.uPointPosition;
 
       for (const _mesh of material.meshes) {
         _mesh.material = material.new;

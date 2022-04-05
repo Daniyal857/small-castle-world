@@ -8,6 +8,10 @@ export default [
         source: '/assets/smallWorld.glb'
       },
       {
+        name: 'entranceModel',
+        source: '/assets/entranceModel.glb'
+      },
+      {
         name: 'bakedFloorModel',
         source: '/assets/bakedFloorModel.glb'
       },
@@ -17,7 +21,7 @@ export default [
         type: 'texture'
       },
       {
-        name: 'windStroke1eModel',
+        name: 'windStroke1Model',
         source: '/assets/windStroke1.glb',
         type: 'model'
       },
