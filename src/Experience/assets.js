@@ -16,6 +16,11 @@ export default [
         source: '/assets/bakedFloorModel.glb'
       },
       {
+        name: 'entranceStrokeTexture',
+        source: '/assets/entranceStrokeTexture.png',
+        type: 'texture'
+      },
+      {
         name: 'bakedFloorTexture',
         source: '/assets/bakedFloorTexture.png',
         type: 'texture'

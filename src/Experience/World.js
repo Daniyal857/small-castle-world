@@ -15,7 +15,7 @@ export default class World {
     this.resources.on('groupEnd', _group => {
       if (_group.name === 'base') {
         this.setFloor();
-        // this.setEntrance();
+        this.setEntrance();
         this.setWindStrokes();
         this.setMatcapsModel();
       }
@@ -41,6 +41,9 @@ export default class World {
   resize() {}
 
   update() {
+    if (this.entrance) {
+      this.entrance.update();
+    }
     if (this.matcapModal) {
       this.matcapModal.update();
     }
