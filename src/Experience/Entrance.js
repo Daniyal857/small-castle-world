@@ -83,7 +83,7 @@ export default class Entrance {
 
       // Reset
       item.reset = () => {
-        item.position.z = 3.2;
+        item.position.z = 4;
         item.position.y = Math.random() * 0.7;
         item.position.x = (Math.random() - 0.6) * 1;
 

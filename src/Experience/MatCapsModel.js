@@ -13,9 +13,12 @@ export default class MatCapsModel {
     this.debug = this.experience.debug;
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
+    this.time = this.experience.time;
+
     this.floorColor = '#4f7723';
     this.pointColor = '#ff0000';
     this.objects = {};
+    this.objects.flags = [];
 
     // Debug
     if (this.debug) {
@@ -121,15 +124,25 @@ export default class MatCapsModel {
         _child instanceof THREE.Mesh &&
         _child.material instanceof THREE.MeshStandardMaterial
       ) {
-        let material = this.model.materials[_child.material.name];
+        // Material
+        let materialName = _child.material.name;
+        let isFlag = _child.name.match(/^flag/);
+
+        if (isFlag) {
+          materialName += 'flag';
+        }
+
+        let material = this.model.materials[materialName];
 
         if (!material) {
           material = {};
           material.original = _child.material;
           material.meshes = [];
+          material.isFlag = isFlag;
 
-          this.model.materials[_child.material.name] = material;
+          this.model.materials[materialName] = material;
         }
+
         material.meshes.push(_child);
       }
 
@@ -160,6 +173,15 @@ export default class MatCapsModel {
       //   matcap: matcapTexture
       // });
 
+      const defines = {
+        MATCAP: '',
+        USE_MATCAP: ''
+      };
+
+      if (material.isFlag) {
+        defines.IS_FLAG = '';
+      }
+
       material.new = new THREE.ShaderMaterial({
         uniforms: mergeUniforms([
           THREE.UniformsLib.common,
@@ -169,13 +191,11 @@ export default class MatCapsModel {
           THREE.UniformsLib.fog,
           THREE.UniformsLib.lights,
           {
+            uTime: { value: null },
             matcap: { value: null }
           }
         ]),
-        defines: {
-          MATCAP: '',
-          USE_MATCAP: ''
-        },
+        defines,
         vertexShader: matcapVertex,
         fragmentShader: matcapFragment
       });
@@ -235,6 +255,11 @@ export default class MatCapsModel {
   }
 
   update() {
+    for (const _materialKey in this.model.materials) {
+      const material = this.model.materials[_materialKey];
+      material.new.uniforms.uTime.value = this.time.elapsed;
+    }
+
     this.objects.gear0.rotation.y =
       -this.objects.telescopeY.rotation.y * (11 / 6);
     this.objects.gear1.rotation.y =

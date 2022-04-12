@@ -34,6 +34,10 @@ uniform vec3 uPointPosiiton;
 varying vec3 vWorldNormal;
 varying vec3 vModelPosition;
 
+	#ifdef IS_FLAG
+		varying float vFlagStrength;
+	#endif
+
 void main() {
 
 	#include <clipping_planes_fragment>
@@ -65,6 +69,18 @@ void main() {
 	#endif
 
 	vec3 outgoingLight = diffuseColor.rgb * matcapColor.rgb;
+
+  /**
+  /* Flags
+  */
+
+  #ifdef IS_FLAG
+    outgoingLight = outgoingLight + vFlagStrength  * 0.15;
+	#endif
+
+
+
+
 
   /**
   /* Floor Bounce
