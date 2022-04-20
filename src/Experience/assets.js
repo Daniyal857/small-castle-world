@@ -41,6 +41,26 @@ export default [
         type: 'texture'
       },
       {
+        name: 'grassMatcapTexture',
+        source: '/assets/matcaps/grass.png',
+        type: 'texture'
+      },
+      {
+        name: 'chestSecondaryMatcapTexture',
+        source: '/assets/matcaps/chestSecondary.png',
+        type: 'texture'
+      },
+      {
+        name: 'chestLockMatcapTexture',
+        source: '/assets/matcaps/chestLock.png',
+        type: 'texture'
+      },
+      {
+        name: 'chestFootMatcapTexture',
+        source: '/assets/matcaps/chestFoot.png',
+        type: 'texture'
+      },
+      {
         name: 'febricYellowMatcapTexture',
         source: '/assets/matcaps/febricYellow.png',
         type: 'texture'
