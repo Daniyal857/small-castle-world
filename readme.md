@@ -2,7 +2,7 @@
 
 ## Links
 
-- [Live](#)
+- [Live](https://small-castle-world.vercel.app/)
 
 ## Setup
 
