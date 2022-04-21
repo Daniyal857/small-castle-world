@@ -128,8 +128,6 @@ export default class MatCapsModel {
         let materialName = _child.material.name;
         let isFlag = _child.name.match(/^flag/);
 
-        console.log('materialName', materialName);
-
         if (isFlag) {
           materialName += 'flag';
         }
